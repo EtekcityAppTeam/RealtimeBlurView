@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -45,6 +46,8 @@ public class RealtimeBlurView extends View {
 	private boolean mDifferentRoot;
 	private static int RENDERING_COUNT;
 	private static int BLUR_IMPL;
+	private float cornerRadius;
+	private boolean isRoundedCorners;
 
 	public RealtimeBlurView(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -56,6 +59,9 @@ public class RealtimeBlurView extends View {
 				TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, context.getResources().getDisplayMetrics()));
 		mDownsampleFactor = a.getFloat(R.styleable.RealtimeBlurView_realtimeDownsampleFactor, 4);
 		mOverlayColor = a.getColor(R.styleable.RealtimeBlurView_realtimeOverlayColor, 0xAAFFFFFF);
+		isRoundedCorners = a.getBoolean(R.styleable.RealtimeBlurView_isRoundedCorners, false);
+		cornerRadius = a.getDimension(R.styleable.RealtimeBlurView_cornerRadius,
+				TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12, context.getResources().getDisplayMetrics()));
 		a.recycle();
 
 		mPaint = new Paint();
@@ -351,7 +357,13 @@ public class RealtimeBlurView extends View {
 			canvas.drawBitmap(blurredBitmap, mRectSrc, mRectDst, null);
 		}
 		mPaint.setColor(overlayColor);
-		canvas.drawRect(mRectDst, mPaint);
+		if (isRoundedCorners) {
+			//画出4个圆角
+			final RectF rectF = new RectF(0, 0, canvas.getWidth(), canvas.getHeight());
+			canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, mPaint);
+		} else {
+			canvas.drawRect(mRectDst, mPaint);
+		}
 	}
 
 	private static class StopException extends RuntimeException {
